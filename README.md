@@ -19,6 +19,12 @@ Crono Task é um projeto desenvolvido com FastAPI, utilizando Poetry para gerenc
 
 ## Instalação
 
+Para instalar o Poetry, caso ainda não tenha o mesmo, execute o seguinte comando
+
+```bash
+pip install poetry 
+``` 
+
 Para instalar as dependências do projeto, execute o seguinte comando no diretório raiz do projeto:
 
 ```bash
