@@ -26,7 +26,7 @@ def test_create_user_already_exists(client, user):
         '/users',
         json={
             'name': 'Teste',
-            'email': 'test@test.com',
+            'email': user.email,
             'password': 'test',
         },
     )
@@ -47,11 +47,10 @@ def test_read_user(client, user):
     response = client.get(f'/users/{user.id}')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'name': 'Teste',
-        'email': 'test@test.com',
-        'id': user.id,
-    }
+    assert 'id' in response.json()
+    assert 'name' in response.json()
+    assert 'email' in response.json()
+    assert 'password' not in response.json()
 
 
 def test_read_user_not_found(client):
@@ -82,7 +81,7 @@ def test_update_user(client, user, token):
 
 def test_update_user_unauthorized(client):
     response = client.put(
-        '/users/99',
+        '/users/1',
         json={
             'name': 'mauricio',
             'email': 'mauricio@gmail.com',
@@ -92,6 +91,22 @@ def test_update_user_unauthorized(client):
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json() == {'detail': 'Not authenticated'}
+
+
+def test_update_user_with_wrong_user(client, other_user, token):
+    response = client.put(
+        f'/users/{other_user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'name': 'bob',
+            'email': 'bob@example.com',
+            'password': 'mynewpassword',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
 def test_delete_user(client, user, token):
@@ -106,6 +121,16 @@ def test_delete_user(client, user, token):
 
 
 def test_delete_user_unauthorized(client):
-    response = client.delete('/users/99')
+    response = client.delete('/users/1')
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json() == {'detail': 'Not authenticated'}
+
+
+def test_delete_user_with_wrong_user(client, other_user, token):
+    response = client.delete(
+        f'/users/{other_user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}

@@ -9,10 +9,15 @@ from sqlalchemy.orm import Session
 from crono_task.database import get_session
 from crono_task.models import User
 from crono_task.schemas import Token
-from crono_task.security import create_access_token, verify_password
+from crono_task.security import (
+    create_access_token,
+    get_current_user,
+    verify_password,
+)
 
 OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
 Session = Annotated[Session, Depends(get_session)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -30,3 +35,10 @@ def login_for_access_token(form_data: OAuth2Form, session: Session):
     access_token = create_access_token(data={'sub': user.email})
 
     return {'access_token': access_token, 'token_type': 'bearer'}
+
+
+@router.post('/refresh_token', response_model=Token)
+def refresh_access_token(user: CurrentUser):
+    new_access_token = create_access_token(data={'sub': user.email})
+
+    return {'access_token': new_access_token, 'token_type': 'bearer'}
