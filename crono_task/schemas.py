@@ -48,3 +48,11 @@ class TodoResponseSchema(BaseModel):
 
 class TodoList(BaseModel):
     todos: list[TodoResponseSchema]
+
+
+class TodoUpdateSchema(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    tag: str | None = None
+    state: str | None = None
+    finished_at: str | None = None
