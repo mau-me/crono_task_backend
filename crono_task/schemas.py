@@ -29,3 +29,22 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
+
+
+class TodoSchema(BaseModel):
+    title: str
+    description: str
+    tag: str
+    state: str
+
+
+class TodoResponseSchema(BaseModel):
+    id: int
+    title: str
+    description: str
+    tag: str
+    state: str
+
+
+class TodoList(BaseModel):
+    todos: list[TodoResponseSchema]

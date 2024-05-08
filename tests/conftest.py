@@ -1,4 +1,3 @@
-import factory
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
@@ -6,8 +5,9 @@ from sqlalchemy.orm import sessionmaker
 
 from crono_task.app import app
 from crono_task.database import get_session
-from crono_task.models import Base, User
+from crono_task.models import table_registry
 from crono_task.security import get_password_hash
+from tests.factories import UserFactory
 
 
 @pytest.fixture()
@@ -29,7 +29,7 @@ def session():
         connect_args={'check_same_thread': False},
         poolclass=StaticPool,
     )
-    Base.metadata.create_all(engine)
+    table_registry.metadata.create_all(engine)
 
     Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     session = Session()
@@ -37,7 +37,7 @@ def session():
     yield session
 
     session.close()
-    Base.metadata.drop_all(engine)
+    table_registry.metadata.drop_all(engine)
 
 
 @pytest.fixture()
@@ -78,13 +78,3 @@ def token(client, user):
         },
     )
     return response.json()['access_token']
-
-
-class UserFactory(factory.Factory):
-    class Meta:
-        model = User
-
-    id = factory.Sequence(lambda n: n)
-    name = factory.LazyAttribute(lambda obj: f'test_{obj.id}')
-    email = factory.LazyAttribute(lambda obj: f'{obj.name}@test.com')
-    password = factory.LazyAttribute(lambda obj: f'{obj.name}_password')
