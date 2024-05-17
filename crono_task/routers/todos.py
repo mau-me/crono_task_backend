@@ -52,6 +52,20 @@ def list_todos(  # noqa
     return {'todos': todos}
 
 
+@router.get('/{todo_id}', response_model=TodoResponseSchema)
+def get_todo(todo_id: int, session: Session, user: CurrentUser):
+    todo = session.scalar(
+        select(Todo).where(Todo.user_id == user.id, Todo.id == todo_id)
+    )
+
+    if not todo:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Task not found.'
+        )
+
+    return todo
+
+
 @router.post('/', response_model=TodoResponseSchema)
 def create_todo(todo: TodoSchema, session: Session, user: CurrentUser):
     new_todo = Todo(
